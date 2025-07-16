@@ -51,10 +51,10 @@ function generateTextVertices(text, scale, density) {
             const alpha = data[index + 3];
             
             if (alpha > 128) { // If pixel is visible
-                // Convert canvas coordinates to 3D space
-                const vx = ((x - canvas.width / 2) / canvas.height) * scale;
+                // Convert canvas coordinates to 3D space with proper scaling
+                const vx = ((x - canvas.width / 2) / canvas.width) * scale * 2;
                 const vy = ((canvas.height / 2 - y) / canvas.height) * scale;
-                const vz = (Math.random() - 0.5) * scale * 0.1;
+                const vz = (Math.random() - 0.5) * scale * 0.05;
                 
                 vertices.push(new THREE.Vector3(vx, vy, vz));
             }

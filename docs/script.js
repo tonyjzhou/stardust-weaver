@@ -714,7 +714,7 @@ function morphToShape(shapeType) {
             targetVertices = generateHeartVertices(2.0, Math.min(numParticles, 1000));
             break;
         case 'text':
-            targetVertices = generateTextVertices(textParams.textToRender, 2.0, Math.min(numParticles, 500));
+            targetVertices = generateTextVertices(textParams.textToRender, 2.0, Math.min(numParticles, 2000));
             break;
         default:
             console.error("Unknown shape:", shapeType);
