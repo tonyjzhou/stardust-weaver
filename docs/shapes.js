@@ -259,59 +259,55 @@ function generateMcDonaldsVertices(scale, density) {
 
 function generateGrok4Vertices(scale, density) {
     const vertices = [];
-    const svgData = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      <g fill="#000" stroke="#000" stroke-width="2">
-        <!-- Outer circle -->
-        <circle cx="50" cy="50" r="35" fill="none" stroke="#000" stroke-width="4"/>
-        <!-- Inner circle/oval -->
-        <ellipse cx="50" cy="50" rx="20" ry="25" fill="#000"/>
-        <!-- Diagonal slash -->
-        <path d="M 25 25 L 75 75" stroke="#000" stroke-width="6" stroke-linecap="round"/>
-        <!-- Additional accent line for the slash -->
-        <path d="M 30 20 L 80 70" stroke="#000" stroke-width="3" stroke-linecap="round"/>
-      </g>
-    </svg>
-    `;
+    
+    const numPoints = Math.min(density || 2000, 2000);
+    const outerRingPoints = Math.floor(numPoints * 0.4);
+    const innerEllipsePoints = Math.floor(numPoints * 0.4);
+    const slashPoints = Math.floor(numPoints * 0.2);
 
-    const loader = new SVGLoader();
-    const data = loader.parse(svgData);
-
-    const paths = data.paths;
-    const divisions = density ? Math.floor(density / 12) : 12;
-
-    for (let i = 0; i < paths.length; i++) {
-        const path = paths[i];
+    // Outer circle ring
+    for (let i = 0; i < outerRingPoints; i++) {
+        const angle = (i / outerRingPoints) * Math.PI * 2;
+        const outerRadius = 3.5 * scale * 0.1;
+        const innerRadius = 3.0 * scale * 0.1;
         
-        // Handle both filled shapes and stroke paths
-        if (path.userData && path.userData.style) {
-            const style = path.userData.style;
-            if (style.stroke && style.stroke !== 'none') {
-                // Create points along the stroke path
-                const points = path.getPoints(divisions);
-                for (let j = 0; j < points.length; j++) {
-                    const point = points[j];
-                    const vx = (point.x - 50) * scale * 0.08;
-                    const vy = -(point.y - 50) * scale * 0.08;
-                    const vz = (Math.random() - 0.5) * scale * 0.15;
-                    vertices.push(new THREE.Vector3(vx, vy, vz));
-                }
-            }
-        } else {
-            // Handle filled shapes
-            const shapes = SVGLoader.createShapes(path);
-            for (let j = 0; j < shapes.length; j++) {
-                const shape = shapes[j];
-                const points = shape.getPoints(divisions);
-                for(let k = 0; k < points.length; k++) {
-                    const point = points[k];
-                    const vx = (point.x - 50) * scale * 0.08;
-                    const vy = -(point.y - 50) * scale * 0.08;
-                    const vz = (Math.random() - 0.5) * scale * 0.15;
-                    vertices.push(new THREE.Vector3(vx, vy, vz));
-                }
-            }
-        }
+        // Random point between inner and outer radius
+        const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+
+    // Inner filled ellipse
+    for (let i = 0; i < innerEllipsePoints; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const radiusX = 1.8 * scale * 0.1;
+        const radiusY = 2.2 * scale * 0.1;
+        const r = Math.sqrt(Math.random()); // For uniform distribution inside ellipse
+        
+        const x = Math.cos(angle) * radiusX * r;
+        const y = Math.sin(angle) * radiusY * r;
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+
+    // Diagonal slash
+    for (let i = 0; i < slashPoints; i++) {
+        const t = Math.random();
+        const width = 0.4 * scale * 0.1;
+        
+        // Line from bottom-left to top-right
+        const centerX = (t - 0.5) * 6 * scale * 0.1;
+        const centerY = (t - 0.5) * 6 * scale * 0.1;
+        
+        // Add thickness perpendicular to the line
+        const perpOffset = (Math.random() - 0.5) * width;
+        const x = centerX - perpOffset * Math.cos(Math.PI / 4);
+        const y = centerY + perpOffset * Math.sin(Math.PI / 4);
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        
+        vertices.push(new THREE.Vector3(x, y, z));
     }
 
     return vertices;
