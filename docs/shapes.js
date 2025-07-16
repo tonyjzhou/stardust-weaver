@@ -257,51 +257,6 @@ function generateMcDonaldsVertices(scale, density) {
     return vertices;
 }
 
-function generateGrok4Vertices(scale, density) {
-    const vertices = [];
-    
-    const numPoints = Math.min(density || 2000, 2000);
-    const innerPoints = Math.floor(numPoints * 0.4);
-    const ringPoints = Math.floor(numPoints * 0.6);
-
-    // Inner circle (planet)
-    for (let i = 0; i < innerPoints; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const r = Math.sqrt(Math.random()) * 2.0 * scale * 0.1; // Uniform distribution inside circle
-        const x = Math.cos(angle) * r;
-        const y = Math.sin(angle) * r;
-        const z = (Math.random() - 0.5) * scale * 0.15;
-        vertices.push(new THREE.Vector3(x, y, z));
-    }
-
-    // Tilted ring (Saturn-like)
-    const ringInner = 2.8 * scale * 0.1;
-    const ringOuter = 3.2 * scale * 0.1; // Thin ring
-    const tiltAngle = Math.PI / 6; // 30 degrees tilt for better visibility
-    
-    for (let i = 0; i < ringPoints; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const r = ringInner + Math.random() * (ringOuter - ringInner);
-        let x = Math.cos(angle) * r;
-        let y = Math.sin(angle) * r;
-        let z = 0;
-
-        // Apply tilt (rotate around X-axis)
-        const cosTilt = Math.cos(tiltAngle);
-        const sinTilt = Math.sin(tiltAngle);
-        const newY = y * cosTilt - z * sinTilt;
-        const newZ = y * sinTilt + z * cosTilt;
-        y = newY;
-        z = newZ;
-
-        // Add small random variation
-        z += (Math.random() - 0.5) * scale * 0.05;
-
-        vertices.push(new THREE.Vector3(x, y, z));
-    }
-
-    return vertices;
-}
 
 export { 
     generateHeartVertices, 
@@ -309,6 +264,5 @@ export {
     generateNikeSwooshVertices, 
     generateAppleVertices, 
     generateMickeyVertices, 
-    generateMcDonaldsVertices,
-    generateGrok4Vertices 
+    generateMcDonaldsVertices
 };
