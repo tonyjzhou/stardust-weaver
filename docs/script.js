@@ -593,7 +593,7 @@ function initEventListeners() {
      const textPreview = document.getElementById('textPreview');
      
      function updateDisplayedText() {
-    const newText = customTextInput.value.trim().toUpperCase();
+    const newText = customTextInput.value.trim();
     if (newText.length === 0) {
         customTextInput.style.borderColor = '#ff6666';
         return;
