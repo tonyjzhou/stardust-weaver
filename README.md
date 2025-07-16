@@ -1,6 +1,6 @@
-# Stardust Weaver
+# [Stardust Weaver](https://tonyjzhou.github.io/stardust-weaver/)
 
-Inspired by: [Stardust Weaver: Shaping 3D Particles](https://codepen.io/VoXelo/pen/PwwXVEY).
+Inspired by [Techartist](https://x.com/techartist_)'s work.
 
 Interactive 3D particle simulation built with Three.js (WebGL), JavaScript (ES6), & GLSL shaders. Features shape morphing, post-processing (Bloom, custom effects), OrbitControls.
 
@@ -24,5 +24,6 @@ To run this project on your local machine, you need to serve the files using a s
     npx http-server . -p 8000
     ```
 
-
 The interactive simulation should now be running.
+
+Available at [https://tonyjzhou.github.io/stardust-weaver/](https://tonyjzhou.github.io/stardust-weaver/).
