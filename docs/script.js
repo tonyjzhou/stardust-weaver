@@ -5,7 +5,7 @@ import { RenderPass } from "https://esm.sh/three@0.163.0/examples/jsm/postproces
 import { ShaderPass } from "https://esm.sh/three@0.163.0/examples/jsm/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "https://esm.sh/three@0.163.0/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "https://esm.sh/three@0.163.0/examples/jsm/postprocessing/OutputPass.js";
-import { generateTextVertices, generateHeartVertices, generateKingVertices } from "./shapes.js";
+import { generateHeartVertices, generateKingVertices } from "./shapes.js";
 
 let scene, camera, renderer, controls, particleSystem, composer, bloomPass;
 let trailTexture, trailScene, trailCamera, trailMaterial, trailPass, trailComposer;
@@ -27,17 +27,13 @@ let isInteracting = false;
 let interactionTimer = 0;
 let interactionStrength = 0;
 
-const availableShapes = ['sphere', 'torus', 'galaxy', 'blackhole', 'vortex', 'wave', 'heart', 'text', 'king'];
+const availableShapes = ['sphere', 'torus', 'galaxy', 'blackhole', 'vortex', 'wave', 'heart', 'king'];
 let currentShapeIndex = 0;
 
 // Audio system variables
 let audioSystem = null;
 let isAudioEnabled = false;
 
-// Text settings
-const textParams = {
-    textToRender: 'Hello'
-};
 
 const colorThemes = {
     cosmic: {
@@ -587,46 +583,6 @@ function initEventListeners() {
          }
      });
      
-     // Text input event listeners
-     const customTextInput = document.getElementById('customText');
-     const updateTextButton = document.getElementById('updateText');
-     const textPreview = document.getElementById('textPreview');
-     
-     function updateDisplayedText() {
-    const newText = customTextInput.value.trim();
-    if (newText.length === 0) {
-        customTextInput.style.borderColor = '#ff6666';
-        return;
-    }
-    
-    if (newText.length > 10) {
-        customTextInput.style.borderColor = '#ff6666';
-        customTextInput.value = newText.substring(0, 10);
-        return;
-    }
-    
-    customTextInput.style.borderColor = 'rgba(0, 204, 255, 0.3)';
-    textParams.textToRender = newText;
-    textPreview.textContent = `Current: ${newText}`;
-    
-    // If currently showing text shape, regenerate it
-    if (currentShape === 'text') {
-        morphToShape('text');
-    }
-}
-     
-     updateTextButton.addEventListener('click', updateDisplayedText);
-     
-     customTextInput.addEventListener('keypress', (e) => {
-         if (e.key === 'Enter') {
-             updateDisplayedText();
-         }
-     });
-     
-     customTextInput.addEventListener('input', (e) => {
-         // Reset border color on input
-         e.target.style.borderColor = 'rgba(0, 204, 255, 0.3)';
-     });
     
     document.getElementById('toggleControls').addEventListener('click', () => {
         const controlPanels = document.getElementById('controlPanels');
@@ -712,9 +668,6 @@ function morphToShape(shapeType) {
             break;
         case 'heart':
             targetVertices = generateHeartVertices(2.0, Math.min(numParticles, 1000));
-            break;
-        case 'text':
-            targetVertices = generateTextVertices(textParams.textToRender, 2.0, Math.min(numParticles, 2000));
             break;
         case 'king':
             targetVertices = generateKingVertices(2.0, Math.min(numParticles, 2000));

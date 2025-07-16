@@ -18,54 +18,6 @@ function generateHeartVertices(scale, numPoints) {
   return vertices;
 }
 
-function generateTextVertices(text, scale, density) {
-    const vertices = [];
-    
-    // Create canvas for text rendering
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Set up canvas dimensions and font
-    const fontSize = 400; // Increased for better resolution
-    ctx.font = `bold ${fontSize}px sans-serif`;
-    const metrics = ctx.measureText(text);
-    canvas.width = Math.max(metrics.width + 40, 200); // Add padding
-    canvas.height = fontSize * 1.5; // More height for better spacing
-    
-    // Clear and redraw with proper font settings
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'white';
-    ctx.font = `bold ${fontSize}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-    
-    // Sample pixels to create vertices with improved algorithm
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    
-    // Use a smaller, more consistent skip value for better definition
-    const skip = Math.max(2, Math.floor(Math.sqrt(canvas.width * canvas.height / (density * 2))));
-    
-    for (let y = 0; y < canvas.height; y += skip) {
-        for (let x = 0; x < canvas.width; x += skip) {
-            const index = (y * canvas.width + x) * 4;
-            const alpha = data[index + 3];
-            
-            if (alpha > 200) { // Higher threshold for cleaner text
-                // Convert canvas coordinates to 3D space with proper scaling
-                const vx = ((x - canvas.width / 2) / Math.max(canvas.width, canvas.height)) * scale * 3;
-                const vy = ((canvas.height / 2 - y) / Math.max(canvas.width, canvas.height)) * scale * 3;
-                const vz = (Math.random() - 0.5) * scale * 0.02; // Less Z variation
-                
-                vertices.push(new THREE.Vector3(vx, vy, vz));
-            }
-        }
-    }
-    
-    return vertices;
-}
 
 function generateKingVertices(scale, density) {
     const vertices = [];
@@ -110,4 +62,4 @@ function generateKingVertices(scale, density) {
     return vertices;
 }
 
-export { generateHeartVertices, generateTextVertices, generateKingVertices };
+export { generateHeartVertices, generateKingVertices };

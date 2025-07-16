@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(git log:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }
