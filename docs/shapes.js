@@ -261,52 +261,42 @@ function generateGrok4Vertices(scale, density) {
     const vertices = [];
     
     const numPoints = Math.min(density || 2000, 2000);
-    const outerRingPoints = Math.floor(numPoints * 0.4);
-    const innerEllipsePoints = Math.floor(numPoints * 0.4);
-    const slashPoints = Math.floor(numPoints * 0.2);
+    const innerPoints = Math.floor(numPoints * 0.4);
+    const ringPoints = Math.floor(numPoints * 0.6);
 
-    // Outer circle ring
-    for (let i = 0; i < outerRingPoints; i++) {
-        const angle = (i / outerRingPoints) * Math.PI * 2;
-        const outerRadius = 3.5 * scale * 0.1;
-        const innerRadius = 3.0 * scale * 0.1;
-        
-        // Random point between inner and outer radius
-        const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        const z = (Math.random() - 0.5) * scale * 0.15;
-        vertices.push(new THREE.Vector3(x, y, z));
-    }
-
-    // Inner filled ellipse
-    for (let i = 0; i < innerEllipsePoints; i++) {
+    // Inner circle (planet)
+    for (let i = 0; i < innerPoints; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const radiusX = 1.8 * scale * 0.1;
-        const radiusY = 2.2 * scale * 0.1;
-        const r = Math.sqrt(Math.random()); // For uniform distribution inside ellipse
-        
-        const x = Math.cos(angle) * radiusX * r;
-        const y = Math.sin(angle) * radiusY * r;
+        const r = Math.sqrt(Math.random()) * 2.0 * scale * 0.1; // Uniform distribution inside circle
+        const x = Math.cos(angle) * r;
+        const y = Math.sin(angle) * r;
         const z = (Math.random() - 0.5) * scale * 0.15;
         vertices.push(new THREE.Vector3(x, y, z));
     }
 
-    // Diagonal slash
-    for (let i = 0; i < slashPoints; i++) {
-        const t = Math.random();
-        const width = 0.4 * scale * 0.1;
-        
-        // Line from bottom-left to top-right
-        const centerX = (t - 0.5) * 6 * scale * 0.1;
-        const centerY = (t - 0.5) * 6 * scale * 0.1;
-        
-        // Add thickness perpendicular to the line
-        const perpOffset = (Math.random() - 0.5) * width;
-        const x = centerX - perpOffset * Math.cos(Math.PI / 4);
-        const y = centerY + perpOffset * Math.sin(Math.PI / 4);
-        const z = (Math.random() - 0.5) * scale * 0.15;
-        
+    // Tilted ring (Saturn-like)
+    const ringInner = 2.8 * scale * 0.1;
+    const ringOuter = 3.2 * scale * 0.1; // Thin ring
+    const tiltAngle = Math.PI / 6; // 30 degrees tilt for better visibility
+    
+    for (let i = 0; i < ringPoints; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const r = ringInner + Math.random() * (ringOuter - ringInner);
+        let x = Math.cos(angle) * r;
+        let y = Math.sin(angle) * r;
+        let z = 0;
+
+        // Apply tilt (rotate around X-axis)
+        const cosTilt = Math.cos(tiltAngle);
+        const sinTilt = Math.sin(tiltAngle);
+        const newY = y * cosTilt - z * sinTilt;
+        const newZ = y * sinTilt + z * cosTilt;
+        y = newY;
+        z = newZ;
+
+        // Add small random variation
+        z += (Math.random() - 0.5) * scale * 0.05;
+
         vertices.push(new THREE.Vector3(x, y, z));
     }
 
