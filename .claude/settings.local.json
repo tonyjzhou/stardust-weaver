@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git log:*)",
       "Bash(python3:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(pkill:*)"
     ],
     "deny": []
   }

@@ -62,4 +62,206 @@ function generateKingVertices(scale, density) {
     return vertices;
 }
 
-export { generateHeartVertices, generateKingVertices };
+function generateNikeSwooshVertices(scale, density) {
+    const vertices = [];
+    const svgData = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50">
+      <path d="M20 35 C 30 25, 60 15, 85 20 C 90 21, 85 25, 80 24 C 60 20, 35 28, 20 35 Z" fill="#000"/>
+    </svg>
+    `;
+
+    const loader = new SVGLoader();
+    const data = loader.parse(svgData);
+
+    const paths = data.paths;
+    const divisions = density ? Math.floor(density / 15) : 15;
+
+    for (let i = 0; i < paths.length; i++) {
+        const path = paths[i];
+        const shapes = SVGLoader.createShapes(path);
+
+        for (let j = 0; j < shapes.length; j++) {
+            const shape = shapes[j];
+            const points = shape.getPoints(divisions);
+            for(let k = 0; k < points.length; k++) {
+                const point = points[k];
+                const vx = (point.x - 50) * scale * 0.08;
+                const vy = -(point.y - 25) * scale * 0.08;
+                const vz = (Math.random() - 0.5) * scale * 0.15;
+                vertices.push(new THREE.Vector3(vx, vy, vz));
+            }
+        }
+    }
+
+    return vertices;
+}
+
+function generateAppleVertices(scale, density) {
+    const vertices = [];
+    const svgData = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <path d="M50 10 C 30 10, 15 25, 15 45 C 15 70, 35 90, 50 90 C 65 90, 85 70, 85 45 C 85 25, 70 10, 50 10 Z M 65 20 C 75 15, 85 25, 75 35 C 70 30, 65 25, 65 20 Z" fill="#000"/>
+      <ellipse cx="65" cy="25" rx="8" ry="4" fill="#fff"/>
+    </svg>
+    `;
+
+    const loader = new SVGLoader();
+    const data = loader.parse(svgData);
+
+    const paths = data.paths;
+    const divisions = density ? Math.floor(density / 12) : 12;
+
+    for (let i = 0; i < paths.length; i++) {
+        const path = paths[i];
+        const shapes = SVGLoader.createShapes(path);
+
+        for (let j = 0; j < shapes.length; j++) {
+            const shape = shapes[j];
+            const points = shape.getPoints(divisions);
+            for(let k = 0; k < points.length; k++) {
+                const point = points[k];
+                const vx = (point.x - 50) * scale * 0.08;
+                const vy = -(point.y - 50) * scale * 0.08;
+                const vz = (Math.random() - 0.5) * scale * 0.15;
+                vertices.push(new THREE.Vector3(vx, vy, vz));
+            }
+        }
+    }
+
+    return vertices;
+}
+
+function generateMercedesVertices(scale, density) {
+    const vertices = [];
+    
+    const numPoints = Math.min(density || 2000, 2000);
+    const centerX = 0;
+    const centerY = 0;
+    const radius = 3 * scale * 0.1;
+    
+    // Generate circle outline
+    const circlePoints = Math.floor(numPoints * 0.6);
+    for (let i = 0; i < circlePoints; i++) {
+        const angle = (i / circlePoints) * Math.PI * 2;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+    
+    // Generate three spokes
+    const spokePoints = Math.floor(numPoints * 0.4 / 3);
+    
+    // Top spoke (12 o'clock)
+    for (let i = 0; i < spokePoints; i++) {
+        const t = i / spokePoints;
+        const x = centerX;
+        const y = centerY + (t * radius);
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+    
+    // Bottom left spoke (8 o'clock)
+    for (let i = 0; i < spokePoints; i++) {
+        const t = i / spokePoints;
+        const x = centerX - (t * radius * 0.866); // cos(30°)
+        const y = centerY - (t * radius * 0.5);   // sin(30°)
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+    
+    // Bottom right spoke (4 o'clock)
+    for (let i = 0; i < spokePoints; i++) {
+        const t = i / spokePoints;
+        const x = centerX + (t * radius * 0.866); // cos(30°)
+        const y = centerY - (t * radius * 0.5);   // sin(30°)
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+
+    return vertices;
+}
+
+function generateMickeyVertices(scale, density) {
+    const vertices = [];
+    
+    const numPoints = Math.min(density || 2000, 2000);
+    const pointsPerCircle = Math.floor(numPoints / 3);
+
+    // Main head circle
+    for (let i = 0; i < pointsPerCircle; i++) {
+        const angle = (i / pointsPerCircle) * Math.PI * 2;
+        const radius = 3 * scale * 0.1;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+
+    // Left ear
+    for (let i = 0; i < pointsPerCircle; i++) {
+        const angle = (i / pointsPerCircle) * Math.PI * 2;
+        const radius = 2 * scale * 0.1;
+        const x = Math.cos(angle) * radius - 2.5 * scale * 0.1;
+        const y = Math.sin(angle) * radius + 2.5 * scale * 0.1;
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+
+    // Right ear
+    for (let i = 0; i < pointsPerCircle; i++) {
+        const angle = (i / pointsPerCircle) * Math.PI * 2;
+        const radius = 2 * scale * 0.1;
+        const x = Math.cos(angle) * radius + 2.5 * scale * 0.1;
+        const y = Math.sin(angle) * radius + 2.5 * scale * 0.1;
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+
+    return vertices;
+}
+
+function generateMcDonaldsVertices(scale, density) {
+    const vertices = [];
+    
+    const numPoints = Math.min(density || 2000, 2000);
+    const pointsPerArch = Math.floor(numPoints / 2);
+    
+    // Left arch
+    for (let i = 0; i < pointsPerArch; i++) {
+        const t = i / pointsPerArch;
+        const angle = t * Math.PI;
+        const archHeight = 2.5 * scale * 0.1;
+        const archWidth = 1.5 * scale * 0.1;
+        
+        const x = -archWidth + Math.cos(angle) * archWidth;
+        const y = -archHeight + Math.sin(angle) * archHeight;
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+    
+    // Right arch
+    for (let i = 0; i < pointsPerArch; i++) {
+        const t = i / pointsPerArch;
+        const angle = t * Math.PI;
+        const archHeight = 2.5 * scale * 0.1;
+        const archWidth = 1.5 * scale * 0.1;
+        
+        const x = archWidth + Math.cos(angle) * archWidth;
+        const y = -archHeight + Math.sin(angle) * archHeight;
+        const z = (Math.random() - 0.5) * scale * 0.15;
+        vertices.push(new THREE.Vector3(x, y, z));
+    }
+
+    return vertices;
+}
+
+export { 
+    generateHeartVertices, 
+    generateKingVertices, 
+    generateNikeSwooshVertices, 
+    generateAppleVertices, 
+    generateMercedesVertices, 
+    generateMickeyVertices, 
+    generateMcDonaldsVertices 
+};
