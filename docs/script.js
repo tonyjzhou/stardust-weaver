@@ -5,7 +5,7 @@ import { RenderPass } from "https://esm.sh/three@0.163.0/examples/jsm/postproces
 import { ShaderPass } from "https://esm.sh/three@0.163.0/examples/jsm/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "https://esm.sh/three@0.163.0/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "https://esm.sh/three@0.163.0/examples/jsm/postprocessing/OutputPass.js";
-import { generateTextVertices, generateHeartVertices } from "./shapes.js";
+import { generateTextVertices, generateHeartVertices, generateKingVertices } from "./shapes.js";
 
 let scene, camera, renderer, controls, particleSystem, composer, bloomPass;
 let trailTexture, trailScene, trailCamera, trailMaterial, trailPass, trailComposer;
@@ -27,7 +27,7 @@ let isInteracting = false;
 let interactionTimer = 0;
 let interactionStrength = 0;
 
-const availableShapes = ['sphere', 'torus', 'galaxy', 'blackhole', 'vortex', 'wave', 'heart', 'text'];
+const availableShapes = ['sphere', 'torus', 'galaxy', 'blackhole', 'vortex', 'wave', 'heart', 'text', 'king'];
 let currentShapeIndex = 0;
 
 // Audio system variables
@@ -715,6 +715,9 @@ function morphToShape(shapeType) {
             break;
         case 'text':
             targetVertices = generateTextVertices(textParams.textToRender, 2.0, Math.min(numParticles, 2000));
+            break;
+        case 'king':
+            targetVertices = generateKingVertices(2.0, Math.min(numParticles, 2000));
             break;
         default:
             console.error("Unknown shape:", shapeType);
