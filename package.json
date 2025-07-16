@@ -1,0 +1,24 @@
+{
+  "name": "stardust-weaver",
+  "version": "1.0.0",
+  "description": "A Pen created on CodePen.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tonyjzhou/stardust-weaver.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tonyjzhou/stardust-weaver/issues"
+  },
+  "homepage": "https://github.com/tonyjzhou/stardust-weaver#readme",
+  "devDependencies": {
+    "jest": "^30.0.4"
+  }
+}
