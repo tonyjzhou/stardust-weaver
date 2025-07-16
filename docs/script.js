@@ -10,7 +10,6 @@ import {
     generateKingVertices, 
     generateNikeSwooshVertices, 
     generateAppleVertices, 
-    generateMercedesVertices, 
     generateMickeyVertices, 
     generateMcDonaldsVertices 
 } from "./shapes.js";
@@ -35,7 +34,7 @@ let isInteracting = false;
 let interactionTimer = 0;
 let interactionStrength = 0;
 
-const availableShapes = ['sphere', 'torus', 'galaxy', 'blackhole', 'vortex', 'wave', 'heart', 'king', 'nike', 'apple', 'mercedes', 'mickey', 'mcdonalds'];
+const availableShapes = ['sphere', 'torus', 'galaxy', 'blackhole', 'vortex', 'wave', 'heart', 'king', 'nike', 'apple', 'mickey', 'mcdonalds'];
 let currentShapeIndex = 0;
 
 // Audio system variables
@@ -685,9 +684,6 @@ function morphToShape(shapeType) {
             break;
         case 'apple':
             targetVertices = generateAppleVertices(2.0, Math.min(numParticles, 2000));
-            break;
-        case 'mercedes':
-            targetVertices = generateMercedesVertices(2.0, Math.min(numParticles, 2000));
             break;
         case 'mickey':
             targetVertices = generateMickeyVertices(2.0, Math.min(numParticles, 2000));

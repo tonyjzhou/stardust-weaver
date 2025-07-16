@@ -133,50 +133,51 @@ function generateAppleVertices(scale, density) {
 
 function generateMercedesVertices(scale, density) {
     const vertices = [];
-    
-    const numPoints = Math.min(density || 2000, 2000);
-    const centerX = 0;
-    const centerY = 0;
-    const radius = 3 * scale * 0.1;
-    
-    // Generate circle outline
-    const circlePoints = Math.floor(numPoints * 0.6);
-    for (let i = 0; i < circlePoints; i++) {
-        const angle = (i / circlePoints) * Math.PI * 2;
-        const x = centerX + Math.cos(angle) * radius;
-        const y = centerY + Math.sin(angle) * radius;
-        const z = (Math.random() - 0.5) * scale * 0.15;
-        vertices.push(new THREE.Vector3(x, y, z));
-    }
-    
-    // Generate three spokes
-    const spokePoints = Math.floor(numPoints * 0.4 / 3);
-    
-    // Top spoke (12 o'clock)
-    for (let i = 0; i < spokePoints; i++) {
-        const t = i / spokePoints;
-        const x = centerX;
-        const y = centerY + (t * radius);
-        const z = (Math.random() - 0.5) * scale * 0.15;
-        vertices.push(new THREE.Vector3(x, y, z));
-    }
-    
-    // Bottom left spoke (8 o'clock)
-    for (let i = 0; i < spokePoints; i++) {
-        const t = i / spokePoints;
-        const x = centerX - (t * radius * 0.866); // cos(30°)
-        const y = centerY - (t * radius * 0.5);   // sin(30°)
-        const z = (Math.random() - 0.5) * scale * 0.15;
-        vertices.push(new THREE.Vector3(x, y, z));
-    }
-    
-    // Bottom right spoke (4 o'clock)
-    for (let i = 0; i < spokePoints; i++) {
-        const t = i / spokePoints;
-        const x = centerX + (t * radius * 0.866); // cos(30°)
-        const y = centerY - (t * radius * 0.5);   // sin(30°)
-        const z = (Math.random() - 0.5) * scale * 0.15;
-        vertices.push(new THREE.Vector3(x, y, z));
+    const svgData = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="45" fill="none" stroke="#000" stroke-width="2"/>
+      <path d="M50 8 L50 50 L27.5 73.4 M50 50 L72.5 73.4" stroke="#000" stroke-width="3" fill="none"/>
+    </svg>
+    `;
+
+    const loader = new SVGLoader();
+    const data = loader.parse(svgData);
+
+    const paths = data.paths;
+    const divisions = density ? Math.floor(density / 12) : 12;
+
+    for (let i = 0; i < paths.length; i++) {
+        const path = paths[i];
+        
+        // For stroke paths, we need to handle them differently
+        if (path.userData && path.userData.style) {
+            const style = path.userData.style;
+            if (style.stroke && style.stroke !== 'none') {
+                // Create points along the stroke path
+                const points = path.getPoints(divisions);
+                for (let j = 0; j < points.length; j++) {
+                    const point = points[j];
+                    const vx = (point.x - 50) * scale * 0.08;
+                    const vy = -(point.y - 50) * scale * 0.08;
+                    const vz = (Math.random() - 0.5) * scale * 0.15;
+                    vertices.push(new THREE.Vector3(vx, vy, vz));
+                }
+            }
+        } else {
+            // Fallback for filled shapes
+            const shapes = SVGLoader.createShapes(path);
+            for (let j = 0; j < shapes.length; j++) {
+                const shape = shapes[j];
+                const points = shape.getPoints(divisions);
+                for(let k = 0; k < points.length; k++) {
+                    const point = points[k];
+                    const vx = (point.x - 50) * scale * 0.08;
+                    const vy = -(point.y - 50) * scale * 0.08;
+                    const vz = (Math.random() - 0.5) * scale * 0.15;
+                    vertices.push(new THREE.Vector3(vx, vy, vz));
+                }
+            }
+        }
     }
 
     return vertices;
@@ -261,7 +262,6 @@ export {
     generateKingVertices, 
     generateNikeSwooshVertices, 
     generateAppleVertices, 
-    generateMercedesVertices, 
     generateMickeyVertices, 
     generateMcDonaldsVertices 
 };
