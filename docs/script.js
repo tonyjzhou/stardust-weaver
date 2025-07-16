@@ -171,6 +171,7 @@ function init() {
         initAudioSystem();
         applyColorTheme('sunset');
         morphToShape('sphere');
+        updateShapeDisplay('sphere');
         
         const controlPanels = document.getElementById('controlPanels');
         const toggleButton = document.getElementById('toggleControls');
@@ -488,6 +489,20 @@ function updateParticleSystem() {
     particleSystem.geometry.attributes.size.needsUpdate = true;
 }
 
+function updateShapeDisplay(shapeName) {
+    // Update stats panel
+    const displayName = shapeName === 'grok4' ? 'Grok 4' : 
+                       shapeName === 'mcdonalds' ? "McDonald's" :
+                       shapeName.charAt(0).toUpperCase() + shapeName.slice(1);
+    document.getElementById('currentShapeValue').textContent = displayName;
+    
+    // Update dropdown selection
+    const shapeSelector = document.getElementById('shapeSelector');
+    if (shapeSelector) {
+        shapeSelector.value = shapeName;
+    }
+}
+
 function initEventListeners() {
     const changeShapeButton = document.getElementById('changeShape');
     if (changeShapeButton) {
@@ -495,12 +510,22 @@ function initEventListeners() {
             currentShapeIndex = (currentShapeIndex + 1) % availableShapes.length;
             const nextShape = availableShapes[currentShapeIndex];
             morphToShape(nextShape);
-            document.getElementById('currentShapeValue').textContent = 
-                nextShape.charAt(0).toUpperCase() + nextShape.slice(1);
+            updateShapeDisplay(nextShape);
             changeShapeButton.classList.add('active');
             setTimeout(() => {
                 changeShapeButton.classList.remove('active');
             }, 300);
+        });
+    }
+
+    // Shape selector dropdown
+    const shapeSelector = document.getElementById('shapeSelector');
+    if (shapeSelector) {
+        shapeSelector.addEventListener('change', (e) => {
+            const selectedShape = e.target.value;
+            currentShapeIndex = availableShapes.indexOf(selectedShape);
+            morphToShape(selectedShape);
+            updateShapeDisplay(selectedShape);
         });
     }
     

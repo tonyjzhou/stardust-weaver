@@ -435,3 +435,32 @@ input[type="range"]::-moz-range-thumb {
     margin-top: 4px;
 }
 
+.shape-selector {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #0cf;
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.shape-selector:hover {
+    border-color: #0af;
+    background: rgba(0, 204, 255, 0.1);
+}
+
+.shape-selector:focus {
+    outline: none;
+    border-color: #0af;
+    box-shadow: 0 0 10px rgba(0, 204, 255, 0.3);
+}
+
+.shape-selector option {
+    background: #1a1a1a;
+    color: white;
+    padding: 8px;
+}
+
