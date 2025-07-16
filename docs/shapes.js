@@ -257,11 +257,72 @@ function generateMcDonaldsVertices(scale, density) {
     return vertices;
 }
 
+function generateGrok4Vertices(scale, density) {
+    const vertices = [];
+    const svgData = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <g fill="#000" stroke="#000" stroke-width="2">
+        <!-- Outer circle -->
+        <circle cx="50" cy="50" r="35" fill="none" stroke="#000" stroke-width="4"/>
+        <!-- Inner circle/oval -->
+        <ellipse cx="50" cy="50" rx="20" ry="25" fill="#000"/>
+        <!-- Diagonal slash -->
+        <path d="M 25 25 L 75 75" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+        <!-- Additional accent line for the slash -->
+        <path d="M 30 20 L 80 70" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </svg>
+    `;
+
+    const loader = new SVGLoader();
+    const data = loader.parse(svgData);
+
+    const paths = data.paths;
+    const divisions = density ? Math.floor(density / 12) : 12;
+
+    for (let i = 0; i < paths.length; i++) {
+        const path = paths[i];
+        
+        // Handle both filled shapes and stroke paths
+        if (path.userData && path.userData.style) {
+            const style = path.userData.style;
+            if (style.stroke && style.stroke !== 'none') {
+                // Create points along the stroke path
+                const points = path.getPoints(divisions);
+                for (let j = 0; j < points.length; j++) {
+                    const point = points[j];
+                    const vx = (point.x - 50) * scale * 0.08;
+                    const vy = -(point.y - 50) * scale * 0.08;
+                    const vz = (Math.random() - 0.5) * scale * 0.15;
+                    vertices.push(new THREE.Vector3(vx, vy, vz));
+                }
+            }
+        } else {
+            // Handle filled shapes
+            const shapes = SVGLoader.createShapes(path);
+            for (let j = 0; j < shapes.length; j++) {
+                const shape = shapes[j];
+                const points = shape.getPoints(divisions);
+                for(let k = 0; k < points.length; k++) {
+                    const point = points[k];
+                    const vx = (point.x - 50) * scale * 0.08;
+                    const vy = -(point.y - 50) * scale * 0.08;
+                    const vz = (Math.random() - 0.5) * scale * 0.15;
+                    vertices.push(new THREE.Vector3(vx, vy, vz));
+                }
+            }
+        }
+    }
+
+    return vertices;
+}
+
 export { 
     generateHeartVertices, 
     generateKingVertices, 
     generateNikeSwooshVertices, 
     generateAppleVertices, 
     generateMickeyVertices, 
-    generateMcDonaldsVertices 
+    generateMcDonaldsVertices,
+    generateGrok4Vertices 
 };

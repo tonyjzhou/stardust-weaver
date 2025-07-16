@@ -11,7 +11,8 @@ import {
     generateNikeSwooshVertices, 
     generateAppleVertices, 
     generateMickeyVertices, 
-    generateMcDonaldsVertices 
+    generateMcDonaldsVertices,
+    generateGrok4Vertices 
 } from "./shapes.js";
 
 let scene, camera, renderer, controls, particleSystem, composer, bloomPass;
@@ -34,7 +35,7 @@ let isInteracting = false;
 let interactionTimer = 0;
 let interactionStrength = 0;
 
-const availableShapes = ['sphere', 'torus', 'galaxy', 'blackhole', 'vortex', 'wave', 'heart', 'king', 'nike', 'apple', 'mickey', 'mcdonalds'];
+const availableShapes = ['sphere', 'torus', 'galaxy', 'blackhole', 'vortex', 'wave', 'heart', 'king', 'nike', 'apple', 'mickey', 'mcdonalds', 'grok4'];
 let currentShapeIndex = 0;
 
 // Audio system variables
@@ -690,6 +691,9 @@ function morphToShape(shapeType) {
             break;
         case 'mcdonalds':
             targetVertices = generateMcDonaldsVertices(2.0, Math.min(numParticles, 2000));
+            break;
+        case 'grok4':
+            targetVertices = generateGrok4Vertices(2.0, Math.min(numParticles, 2000));
             break;
         default:
             console.error("Unknown shape:", shapeType);
