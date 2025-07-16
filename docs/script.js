@@ -36,7 +36,7 @@ let isAudioEnabled = false;
 
 // Text settings
 const textParams = {
-    textToRender: '3D'
+    textToRender: 'Hello'
 };
 
 const colorThemes = {
@@ -593,27 +593,27 @@ function initEventListeners() {
      const textPreview = document.getElementById('textPreview');
      
      function updateDisplayedText() {
-         const newText = customTextInput.value.trim().toUpperCase();
-         if (newText.length === 0) {
-             customTextInput.style.borderColor = '#ff6666';
-             return;
-         }
-         
-         if (newText.length > 10) {
-             customTextInput.style.borderColor = '#ff6666';
-             customTextInput.value = newText.substring(0, 10);
-             return;
-         }
-         
-         customTextInput.style.borderColor = 'rgba(0, 204, 255, 0.3)';
-         textParams.textToRender = newText;
-         textPreview.textContent = `Current: ${newText}`;
-         
-         // If currently showing text shape, regenerate it
-         if (currentShape === 'text') {
-             morphToShape('text');
-         }
-     }
+    const newText = customTextInput.value.trim().toUpperCase();
+    if (newText.length === 0) {
+        customTextInput.style.borderColor = '#ff6666';
+        return;
+    }
+    
+    if (newText.length > 10) {
+        customTextInput.style.borderColor = '#ff6666';
+        customTextInput.value = newText.substring(0, 10);
+        return;
+    }
+    
+    customTextInput.style.borderColor = 'rgba(0, 204, 255, 0.3)';
+    textParams.textToRender = newText;
+    textPreview.textContent = `Current: ${newText}`;
+    
+    // If currently showing text shape, regenerate it
+    if (currentShape === 'text') {
+        morphToShape('text');
+    }
+}
      
      updateTextButton.addEventListener('click', updateDisplayedText);
      
@@ -720,7 +720,6 @@ function morphToShape(shapeType) {
             console.error("Unknown shape:", shapeType);
             return;
     }
-    console.log(`Morphing to ${shapeType} with ${targetVertices.length} vertices`);
     if (targetVertices.length === 0) {
         console.error("No vertices generated for shape:", shapeType);
         return;

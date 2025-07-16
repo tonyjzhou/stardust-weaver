@@ -26,7 +26,7 @@ function generateTextVertices(text, scale, density) {
     
     // Set up canvas dimensions and font
     const fontSize = 200;
-    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.font = `bold ${fontSize}px sans-serif`;
     const metrics = ctx.measureText(text);
     canvas.width = Math.max(metrics.width, 100);
     canvas.height = fontSize * 1.2;
@@ -35,7 +35,7 @@ function generateTextVertices(text, scale, density) {
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = 'white';
-    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillText(text, 0, canvas.height / 2);
