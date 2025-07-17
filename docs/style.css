@@ -464,3 +464,54 @@ input[type="range"]::-moz-range-thumb {
     padding: 8px;
 }
 
+/* Physics Controls */
+.physics-toggle {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(0, 204, 255, 0.5);
+    border-radius: 3px;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    vertical-align: middle;
+}
+
+.physics-toggle:hover {
+    border-color: #0af;
+    background: rgba(0, 204, 255, 0.1);
+}
+
+.physics-toggle:checked {
+    background: linear-gradient(45deg, #0cf, #f0a);
+    border-color: #0cf;
+    box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
+}
+
+.physics-toggle:checked::after {
+    content: '✓';
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    position: relative;
+    top: -2px;
+    left: 1px;
+}
+
+.physics-toggle + label {
+    cursor: pointer;
+    color: #ccc;
+    font-size: 13px;
+    transition: color 0.3s ease;
+}
+
+.physics-toggle:checked + label {
+    color: #0cf;
+}
+
+.physics-toggle + label:hover {
+    color: #0af;
+}
+

@@ -4,7 +4,8 @@
       "Bash(git log:*)",
       "Bash(python3:*)",
       "Bash(node:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(open index.html)"
     ],
     "deny": []
   }

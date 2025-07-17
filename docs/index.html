@@ -76,6 +76,38 @@
         </div>
 
         <div class="control-group">
+            <div class="control-header">Interactive Physics</div>
+            <div class="slider-container">
+                <input type="checkbox" id="gravityWellsToggle" class="physics-toggle">
+                <label for="gravityWellsToggle">Gravity Wells</label>
+            </div>
+            <div class="slider-container">
+                <label>Gravity Strength: <span id="gravityStrengthValue">1.0</span></label>
+                <input type="range" id="gravityStrength" min="0" max="3" step="0.1" value="1.0">
+            </div>
+            <div class="slider-container">
+                <label>Gravity Radius: <span id="gravityRadiusValue">2.0</span></label>
+                <input type="range" id="gravityRadius" min="0.5" max="5" step="0.1" value="2.0">
+            </div>
+            <div class="slider-container">
+                <input type="checkbox" id="magneticZonesToggle" class="physics-toggle">
+                <label for="magneticZonesToggle">Magnetic Zones</label>
+            </div>
+            <div class="slider-container">
+                <label>Magnetic Strength: <span id="magneticStrengthValue">0.5</span></label>
+                <input type="range" id="magneticStrength" min="0" max="2" step="0.1" value="0.5">
+            </div>
+            <div class="slider-container">
+                <input type="checkbox" id="particleCollisionsToggle" class="physics-toggle">
+                <label for="particleCollisionsToggle">Particle Collisions</label>
+            </div>
+            <div class="slider-container">
+                <label>Collision Damping: <span id="collisionDampingValue">0.8</span></label>
+                <input type="range" id="collisionDamping" min="0.1" max="1" step="0.1" value="0.8">
+            </div>
+        </div>
+
+        <div class="control-group">
             <div class="control-header">Visual Effects</div>
             <div class="slider-container">
                 <label>Bloom Intensity: <span id="bloomValue">1.0</span></label>

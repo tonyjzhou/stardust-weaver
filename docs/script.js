@@ -41,6 +41,11 @@ let currentShapeIndex = 0;
 let audioSystem = null;
 let isAudioEnabled = false;
 
+// Interactive physics systems
+let gravityWells = [];
+let magneticZones = [];
+let particleCollisionGrid = null;
+
 
 const colorThemes = {
     cosmic: {
@@ -84,7 +89,16 @@ const params = {
     galaxyArmCount: 3,
     galaxyArmWidth: 0.3,
     waveFrequency: 2.0,
-    vortexIntensity: 2.5
+    vortexIntensity: 2.5,
+    gravityWellsEnabled: false,
+    gravityWellStrength: 1.0,
+    gravityWellRadius: 2.0,
+    magneticZonesEnabled: false,
+    magneticStrength: 0.5,
+    magneticRadius: 1.5,
+    particleCollisions: false,
+    collisionDamping: 0.8,
+    collisionRadius: 0.05
 };
 
 initLoading();
@@ -158,6 +172,7 @@ function init() {
         initScenes();
         initLights();
         createParticleSystem();
+        initInteractivePhysics();
         initControls();
         initEventListeners();
         initComposers();
@@ -462,6 +477,106 @@ function createParticleSystem() {
     trailScene.add(trailParticles);
 }
 
+function initInteractivePhysics() {
+    gravityWells = [
+        { position: new THREE.Vector3(2, 0, 0), strength: 1.0, radius: 2.0 },
+        { position: new THREE.Vector3(-2, 0, 0), strength: 1.0, radius: 2.0 },
+        { position: new THREE.Vector3(0, 2, 0), strength: 1.0, radius: 2.0 },
+        { position: new THREE.Vector3(0, -2, 0), strength: 1.0, radius: 2.0 }
+    ];
+    
+    magneticZones = [
+        { position: new THREE.Vector3(1.5, 1.5, 0), strength: 0.5, radius: 1.5, attractive: true },
+        { position: new THREE.Vector3(-1.5, -1.5, 0), strength: 0.5, radius: 1.5, attractive: false }
+    ];
+}
+
+function applyGravityWells(positions, velocities, delta) {
+    if (!params.gravityWellsEnabled) return;
+    
+    for (let i = 0; i < numParticles; i++) {
+        const idx = i * 3;
+        const particlePos = new THREE.Vector3(positions[idx], positions[idx + 1], positions[idx + 2]);
+        
+        for (const well of gravityWells) {
+            const toWell = new THREE.Vector3().subVectors(well.position, particlePos);
+            const distance = toWell.length();
+            
+            if (distance < well.radius && distance > 0.1) {
+                toWell.normalize();
+                const gravityForce = (well.strength * params.gravityWellStrength) / (distance * distance);
+                
+                velocities[idx] += toWell.x * gravityForce * delta * 0.5;
+                velocities[idx + 1] += toWell.y * gravityForce * delta * 0.5;
+                velocities[idx + 2] += toWell.z * gravityForce * delta * 0.5;
+            }
+        }
+    }
+}
+
+function applyMagneticZones(positions, velocities, delta) {
+    if (!params.magneticZonesEnabled) return;
+    
+    for (let i = 0; i < numParticles; i++) {
+        const idx = i * 3;
+        const particlePos = new THREE.Vector3(positions[idx], positions[idx + 1], positions[idx + 2]);
+        
+        for (const zone of magneticZones) {
+            const toZone = new THREE.Vector3().subVectors(zone.position, particlePos);
+            const distance = toZone.length();
+            
+            if (distance < zone.radius && distance > 0.01) {
+                toZone.normalize();
+                const magneticForce = (zone.strength * params.magneticStrength) / distance;
+                const direction = zone.attractive ? 1 : -1;
+                
+                velocities[idx] += toZone.x * magneticForce * direction * delta;
+                velocities[idx + 1] += toZone.y * magneticForce * direction * delta;
+                velocities[idx + 2] += toZone.z * magneticForce * direction * delta;
+            }
+        }
+    }
+}
+
+function applyParticleCollisions(positions, velocities, delta) {
+    if (!params.particleCollisions) return;
+    
+    const collisionRadius = params.collisionRadius;
+    const damping = params.collisionDamping;
+    
+    for (let i = 0; i < numParticles; i += 10) {
+        const idx1 = i * 3;
+        const pos1 = new THREE.Vector3(positions[idx1], positions[idx1 + 1], positions[idx1 + 2]);
+        const vel1 = new THREE.Vector3(velocities[idx1], velocities[idx1 + 1], velocities[idx1 + 2]);
+        
+        for (let j = i + 10; j < Math.min(i + 100, numParticles); j += 10) {
+            const idx2 = j * 3;
+            const pos2 = new THREE.Vector3(positions[idx2], positions[idx2 + 1], positions[idx2 + 2]);
+            const vel2 = new THREE.Vector3(velocities[idx2], velocities[idx2 + 1], velocities[idx2 + 2]);
+            
+            const distance = pos1.distanceTo(pos2);
+            
+            if (distance < collisionRadius * 2 && distance > 0.001) {
+                const collision = new THREE.Vector3().subVectors(pos2, pos1).normalize();
+                const relativeVelocity = new THREE.Vector3().subVectors(vel2, vel1);
+                const speed = relativeVelocity.dot(collision);
+                
+                if (speed < 0) {
+                    const collisionForce = collision.clone().multiplyScalar(speed * damping);
+                    
+                    velocities[idx1] += collisionForce.x * delta;
+                    velocities[idx1 + 1] += collisionForce.y * delta;
+                    velocities[idx1 + 2] += collisionForce.z * delta;
+                    
+                    velocities[idx2] -= collisionForce.x * delta;
+                    velocities[idx2 + 1] -= collisionForce.y * delta;
+                    velocities[idx2 + 2] -= collisionForce.z * delta;
+                }
+            }
+        }
+    }
+}
+
 function updateParticleSystem() {
     if (!particleSystem) return;
     
@@ -581,6 +696,43 @@ function initEventListeners() {
     document.getElementById('noiseSpeed').addEventListener('input', (e) => {
         params.noiseSpeed = parseFloat(e.target.value);
         document.getElementById('noiseSpeedValue').textContent = params.noiseSpeed.toFixed(2);
+    });
+    
+    // Physics controls
+    document.getElementById('gravityWellsToggle').addEventListener('change', (e) => {
+        params.gravityWellsEnabled = e.target.checked;
+    });
+    
+    document.getElementById('gravityStrength').addEventListener('input', (e) => {
+        params.gravityWellStrength = parseFloat(e.target.value);
+        document.getElementById('gravityStrengthValue').textContent = params.gravityWellStrength.toFixed(1);
+    });
+    
+    document.getElementById('gravityRadius').addEventListener('input', (e) => {
+        params.gravityWellRadius = parseFloat(e.target.value);
+        document.getElementById('gravityRadiusValue').textContent = params.gravityWellRadius.toFixed(1);
+        // Update all gravity wells with new radius
+        gravityWells.forEach(well => {
+            well.radius = params.gravityWellRadius;
+        });
+    });
+    
+    document.getElementById('magneticZonesToggle').addEventListener('change', (e) => {
+        params.magneticZonesEnabled = e.target.checked;
+    });
+    
+    document.getElementById('magneticStrength').addEventListener('input', (e) => {
+        params.magneticStrength = parseFloat(e.target.value);
+        document.getElementById('magneticStrengthValue').textContent = params.magneticStrength.toFixed(1);
+    });
+    
+    document.getElementById('particleCollisionsToggle').addEventListener('change', (e) => {
+        params.particleCollisions = e.target.checked;
+    });
+    
+    document.getElementById('collisionDamping').addEventListener('input', (e) => {
+        params.collisionDamping = parseFloat(e.target.value);
+        document.getElementById('collisionDampingValue').textContent = params.collisionDamping.toFixed(1);
     });
     
     document.getElementById('enableAudio').addEventListener('click', async () => {
@@ -853,6 +1005,12 @@ function animate() {
                     }
                 }
             }
+            
+            // Apply interactive physics systems
+            applyGravityWells(positions, velocities, delta);
+            applyMagneticZones(positions, velocities, delta);
+            applyParticleCollisions(positions, velocities, delta);
+            
             particleSystem.geometry.attributes.position.needsUpdate = true;
             if (trailScene.children[0]) {
                 trailScene.children[0].rotation.copy(particleSystem.rotation);
