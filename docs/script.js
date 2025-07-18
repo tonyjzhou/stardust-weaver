@@ -46,6 +46,17 @@ let gravityWells = [];
 let magneticZones = [];
 let particleCollisionGrid = null;
 
+// Dynamic environment systems
+let weatherParticles = null;
+let dayNightTime = 0;
+let seasonalTime = 0;
+let currentSeason = 'spring';
+let ambientLight = null;
+let directionalLight = null;
+let pointLight1 = null;
+let pointLight2 = null;
+let weatherSystem = null;
+
 
 const colorThemes = {
     cosmic: {
@@ -67,6 +78,60 @@ const colorThemes = {
         particleColor1: new THREE.Color(0x00ff66),
         particleColor2: new THREE.Color(0x66ffff),
         backgroundColor: new THREE.Color(0x000000)
+    }
+};
+
+const seasonalThemes = {
+    spring: {
+        shapes: ['heart', 'sphere', 'wave'],
+        colors: { color1: 0x00ff66, color2: 0x66ffff, bg: 0x001122 },
+        weatherType: 'rain',
+        lightIntensity: 0.8
+    },
+    summer: {
+        shapes: ['galaxy', 'vortex', 'nike'],
+        colors: { color1: 0xffaa00, color2: 0xff6600, bg: 0x000011 },
+        weatherType: 'fire',
+        lightIntensity: 1.2
+    },
+    autumn: {
+        shapes: ['apple', 'king', 'torus'],
+        colors: { color1: 0xff6600, color2: 0xaa3300, bg: 0x110800 },
+        weatherType: 'snow',
+        lightIntensity: 0.6
+    },
+    winter: {
+        shapes: ['mickey', 'blackhole', 'mcdonalds'],
+        colors: { color1: 0x0099ff, color2: 0x66ccff, bg: 0x000033 },
+        weatherType: 'snow',
+        lightIntensity: 0.4
+    }
+};
+
+const weatherTypes = {
+    rain: {
+        particleCount: 2000,
+        velocity: new THREE.Vector3(0, -15, 0),
+        spread: 0.1,
+        color: new THREE.Color(0x4444ff),
+        size: 0.02,
+        gravity: -20
+    },
+    snow: {
+        particleCount: 1500,
+        velocity: new THREE.Vector3(0, -3, 0),
+        spread: 0.3,
+        color: new THREE.Color(0xffffff),
+        size: 0.05,
+        gravity: -5
+    },
+    fire: {
+        particleCount: 3000,
+        velocity: new THREE.Vector3(0, 8, 0),
+        spread: 0.5,
+        color: new THREE.Color(0xff4400),
+        size: 0.03,
+        gravity: 10
     }
 };
 
@@ -98,7 +163,15 @@ const params = {
     magneticRadius: 1.5,
     particleCollisions: false,
     collisionDamping: 0.8,
-    collisionRadius: 0.05
+    collisionRadius: 0.05,
+    weatherEnabled: false,
+    weatherType: 'rain',
+    weatherIntensity: 0.5,
+    dayNightCycle: false,
+    dayNightSpeed: 0.1,
+    seasonalThemes: false,
+    seasonalSpeed: 0.05,
+    environmentalLighting: true
 };
 
 initLoading();
@@ -173,6 +246,7 @@ function init() {
         initLights();
         createParticleSystem();
         initInteractivePhysics();
+        initDynamicEnvironment();
         initControls();
         initEventListeners();
         initComposers();
@@ -235,15 +309,15 @@ function initScenes() {
 }
 
 function initLights() {
-    const ambientLight = new THREE.AmbientLight(0xffffff, params.ambientLightIntensity);
+    ambientLight = new THREE.AmbientLight(0xffffff, params.ambientLightIntensity);
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, params.directionalLightIntensity);
+    directionalLight = new THREE.DirectionalLight(0xffffff, params.directionalLightIntensity);
     directionalLight.position.set(1, 3, 2);
     scene.add(directionalLight);
-    const pointLight1 = new THREE.PointLight(params.particleColor1, 1, 20);
+    pointLight1 = new THREE.PointLight(params.particleColor1, 1, 20);
     pointLight1.position.set(5, 3, 2);
     scene.add(pointLight1);
-    const pointLight2 = new THREE.PointLight(params.particleColor2, 1, 20);
+    pointLight2 = new THREE.PointLight(params.particleColor2, 1, 20);
     pointLight2.position.set(-5, -3, -2);
     scene.add(pointLight2);
 }
@@ -603,6 +677,234 @@ function updateParticleSystem() {
     particleSystem.geometry.attributes.size.needsUpdate = true;
 }
 
+function initDynamicEnvironment() {
+    // Initialize weather system
+    weatherSystem = {
+        particles: null,
+        velocities: null,
+        lifetimes: null,
+        initialPositions: null
+    };
+    
+    // Set initial season
+    updateSeason();
+    
+    // Create weather particles if enabled
+    if (params.weatherEnabled) {
+        createWeatherSystem();
+    }
+}
+
+function createWeatherSystem() {
+    if (weatherSystem.particles) {
+        scene.remove(weatherSystem.particles);
+    }
+    
+    const weather = weatherTypes[params.weatherType];
+    const particleCount = Math.floor(weather.particleCount * params.weatherIntensity);
+    
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+    const sizes = new Float32Array(particleCount);
+    
+    weatherSystem.velocities = new Float32Array(particleCount * 3);
+    weatherSystem.lifetimes = new Float32Array(particleCount);
+    weatherSystem.initialPositions = new Float32Array(particleCount * 3);
+    
+    for (let i = 0; i < particleCount; i++) {
+        // Random position in a large area above the scene
+        const x = (Math.random() - 0.5) * 40;
+        const y = 15 + Math.random() * 10;
+        const z = (Math.random() - 0.5) * 40;
+        
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+        
+        weatherSystem.initialPositions[i * 3] = x;
+        weatherSystem.initialPositions[i * 3 + 1] = y;
+        weatherSystem.initialPositions[i * 3 + 2] = z;
+        
+        // Set velocity with spread
+        weatherSystem.velocities[i * 3] = weather.velocity.x + (Math.random() - 0.5) * weather.spread;
+        weatherSystem.velocities[i * 3 + 1] = weather.velocity.y + (Math.random() - 0.5) * weather.spread;
+        weatherSystem.velocities[i * 3 + 2] = weather.velocity.z + (Math.random() - 0.5) * weather.spread;
+        
+        // Random lifetime
+        weatherSystem.lifetimes[i] = Math.random() * 5 + 2;
+        
+        // Set color
+        colors[i * 3] = weather.color.r;
+        colors[i * 3 + 1] = weather.color.g;
+        colors[i * 3 + 2] = weather.color.b;
+        
+        sizes[i] = weather.size * (0.5 + Math.random() * 1.5);
+    }
+    
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    
+    const material = new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: 0 },
+            pixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+        },
+        vertexShader: `
+            attribute float size;
+            varying vec3 vColor;
+            uniform float time;
+            uniform float pixelRatio;
+            
+            void main() {
+                vColor = color;
+                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                gl_PointSize = size * pixelRatio * (300.0 / -mvPosition.z);
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            varying vec3 vColor;
+            uniform float time;
+            
+            void main() {
+                vec2 uv = gl_PointCoord.xy - 0.5;
+                float dist = length(uv);
+                if (dist > 0.5) discard;
+                float alpha = 1.0 - smoothstep(0.2, 0.5, dist);
+                gl_FragColor = vec4(vColor, alpha * 0.7);
+            }
+        `,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        vertexColors: true,
+    });
+    
+    weatherSystem.particles = new THREE.Points(geometry, material);
+    scene.add(weatherSystem.particles);
+}
+
+function updateWeatherSystem(delta) {
+    if (!weatherSystem.particles || !params.weatherEnabled) return;
+    
+    const weather = weatherTypes[params.weatherType];
+    const positions = weatherSystem.particles.geometry.attributes.position.array;
+    const particleCount = positions.length / 3;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const idx = i * 3;
+        
+        // Update position based on velocity
+        positions[idx] += weatherSystem.velocities[idx] * delta;
+        positions[idx + 1] += weatherSystem.velocities[idx + 1] * delta;
+        positions[idx + 2] += weatherSystem.velocities[idx + 2] * delta;
+        
+        // Apply gravity
+        weatherSystem.velocities[idx + 1] += weather.gravity * delta;
+        
+        // Update lifetime
+        weatherSystem.lifetimes[i] -= delta;
+        
+        // Reset particle if it's too old or too far down
+        if (weatherSystem.lifetimes[i] <= 0 || positions[idx + 1] < -20) {
+            positions[idx] = weatherSystem.initialPositions[idx] + (Math.random() - 0.5) * 20;
+            positions[idx + 1] = 15 + Math.random() * 10;
+            positions[idx + 2] = weatherSystem.initialPositions[idx + 2] + (Math.random() - 0.5) * 20;
+            
+            weatherSystem.velocities[idx] = weather.velocity.x + (Math.random() - 0.5) * weather.spread;
+            weatherSystem.velocities[idx + 1] = weather.velocity.y + (Math.random() - 0.5) * weather.spread;
+            weatherSystem.velocities[idx + 2] = weather.velocity.z + (Math.random() - 0.5) * weather.spread;
+            
+            weatherSystem.lifetimes[i] = Math.random() * 5 + 2;
+        }
+    }
+    
+    weatherSystem.particles.geometry.attributes.position.needsUpdate = true;
+}
+
+function updateDayNightCycle(delta) {
+    if (!params.dayNightCycle) return;
+    
+    dayNightTime += delta * params.dayNightSpeed;
+    
+    // Calculate day/night phase (0 = midnight, 0.5 = noon, 1 = midnight)
+    const phase = (Math.sin(dayNightTime) + 1) / 2;
+    
+    // Update lighting based on phase
+    if (ambientLight) {
+        ambientLight.intensity = 0.1 + phase * 0.7;
+    }
+    
+    if (directionalLight) {
+        directionalLight.intensity = 0.3 + phase * 1.0;
+        // Move sun/moon across the sky
+        const angle = dayNightTime;
+        directionalLight.position.set(
+            Math.cos(angle) * 10,
+            Math.sin(angle) * 8 + 2,
+            2
+        );
+    }
+    
+    // Update background color for day/night
+    const nightColor = new THREE.Color(0x000011);
+    const dayColor = new THREE.Color(0x001133);
+    const currentBgColor = nightColor.clone().lerp(dayColor, phase);
+    
+    scene.background = currentBgColor;
+    if (scene.fog) {
+        scene.fog.color = currentBgColor;
+    }
+}
+
+function updateSeason() {
+    const seasons = ['spring', 'summer', 'autumn', 'winter'];
+    const seasonIndex = Math.floor(seasonalTime / (Math.PI * 2)) % seasons.length;
+    const newSeason = seasons[seasonIndex];
+    
+    if (newSeason !== currentSeason) {
+        currentSeason = newSeason;
+        const theme = seasonalThemes[currentSeason];
+        
+        // Update colors
+        params.particleColor1 = new THREE.Color(theme.colors.color1);
+        params.particleColor2 = new THREE.Color(theme.colors.color2);
+        params.backgroundColor = new THREE.Color(theme.colors.bg);
+        
+        // Update lighting
+        if (ambientLight) {
+            ambientLight.intensity = params.ambientLightIntensity * theme.lightIntensity;
+        }
+        
+        // Update weather type
+        params.weatherType = theme.weatherType;
+        if (params.weatherEnabled) {
+            createWeatherSystem();
+        }
+        
+        // Update particle system
+        updateParticleSystem();
+    }
+}
+
+function updateSeasonalThemes(delta) {
+    if (!params.seasonalThemes) return;
+    
+    seasonalTime += delta * params.seasonalSpeed;
+    
+    // Update season every full cycle
+    if (seasonalTime >= Math.PI * 2) {
+        updateSeason();
+        
+        // Auto-rotate shapes
+        const theme = seasonalThemes[currentSeason];
+        const randomShape = theme.shapes[Math.floor(Math.random() * theme.shapes.length)];
+        morphToShape(randomShape);
+    }
+}
+
 function updateShapeDisplay(shapeName) {
     // Update stats panel
     const displayName = shapeName === 'mcdonalds' ? "McDonald's" :
@@ -766,6 +1068,67 @@ function initEventListeners() {
          }
      });
      
+    // Dynamic environment controls
+    document.getElementById('weatherToggle').addEventListener('change', (e) => {
+        params.weatherEnabled = e.target.checked;
+        if (params.weatherEnabled) {
+            createWeatherSystem();
+        } else if (weatherSystem.particles) {
+            scene.remove(weatherSystem.particles);
+            weatherSystem.particles = null;
+        }
+    });
+    
+    document.getElementById('weatherType').addEventListener('change', (e) => {
+        params.weatherType = e.target.value;
+        if (params.weatherEnabled) {
+            createWeatherSystem();
+        }
+    });
+    
+    document.getElementById('weatherIntensity').addEventListener('input', (e) => {
+        params.weatherIntensity = parseFloat(e.target.value);
+        document.getElementById('weatherIntensityValue').textContent = params.weatherIntensity.toFixed(1);
+        if (params.weatherEnabled) {
+            createWeatherSystem();
+        }
+    });
+    
+    document.getElementById('dayNightToggle').addEventListener('change', (e) => {
+        params.dayNightCycle = e.target.checked;
+        if (!params.dayNightCycle) {
+            // Reset to default lighting
+            if (ambientLight) {
+                ambientLight.intensity = params.ambientLightIntensity;
+            }
+            if (directionalLight) {
+                directionalLight.intensity = params.directionalLightIntensity;
+                directionalLight.position.set(1, 3, 2);
+            }
+            scene.background = params.backgroundColor;
+            if (scene.fog) {
+                scene.fog.color = params.backgroundColor;
+            }
+        }
+    });
+    
+    document.getElementById('dayNightSpeed').addEventListener('input', (e) => {
+        params.dayNightSpeed = parseFloat(e.target.value);
+        document.getElementById('dayNightSpeedValue').textContent = params.dayNightSpeed.toFixed(2);
+    });
+    
+    document.getElementById('seasonalToggle').addEventListener('change', (e) => {
+        params.seasonalThemes = e.target.checked;
+        if (!params.seasonalThemes) {
+            // Reset to current theme
+            updateParticleSystem();
+        }
+    });
+    
+    document.getElementById('seasonalSpeed').addEventListener('input', (e) => {
+        params.seasonalSpeed = parseFloat(e.target.value);
+        document.getElementById('seasonalSpeedValue').textContent = params.seasonalSpeed.toFixed(2);
+    });
     
     document.getElementById('toggleControls').addEventListener('click', () => {
         const controlPanels = document.getElementById('controlPanels');
@@ -941,6 +1304,15 @@ function animate() {
         // Update audio data and apply audio-reactive effects
         if (audioSystem && audioSystem.isSetup && isAudioEnabled) {
             audioSystem.analyser.getByteFrequencyData(audioSystem.dataArray);
+        }
+        
+        // Update dynamic environment systems (with performance throttling)
+        if (frameCounter % 2 === 0) {
+            updateWeatherSystem(delta);
+        }
+        if (frameCounter % 10 === 0) {
+            updateDayNightCycle(delta);
+            updateSeasonalThemes(delta);
         }
         
         if (particleSystem) {
